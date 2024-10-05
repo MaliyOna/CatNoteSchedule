@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35208.52
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CatNoteSchedule.API", "CatNoteSchedule.API\CatNoteSchedule.API.csproj", "{5B443512-E244-4652-9380-88D00274B006}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CatNoteSchedule.Domain", "CatNoteSchedule.Domain\CatNoteSchedule.Domain.csproj", "{71690D65-AFEC-4E60-A2AF-AABB9DA3E052}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5B443512-E244-4652-9380-88D00274B006}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5B443512-E244-4652-9380-88D00274B006}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5B443512-E244-4652-9380-88D00274B006}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5B443512-E244-4652-9380-88D00274B006}.Release|Any CPU.Build.0 = Release|Any CPU
+		{71690D65-AFEC-4E60-A2AF-AABB9DA3E052}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{71690D65-AFEC-4E60-A2AF-AABB9DA3E052}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{71690D65-AFEC-4E60-A2AF-AABB9DA3E052}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{71690D65-AFEC-4E60-A2AF-AABB9DA3E052}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {202F4DAB-8752-4412-89C1-0ED8C32A9723}
+	EndGlobalSection
+EndGlobal
