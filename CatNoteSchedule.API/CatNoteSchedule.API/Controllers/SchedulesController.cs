@@ -10,29 +10,36 @@ public class SchedulesController : ControllerBase
 {
 
     [HttpPost]
-    public async Task<Dictionary<string, List<string>>> GenerateSchedule(List<ActivityModel> activities)
+    public async Task<ActionResult<Dictionary<string, List<string>>>> GenerateSchedule(List<ActivityRequest> activities)
     {
-        ValidateActivities(activities);
-        var schedule = BaseConstants.InitializeScheduleWithHashSet();
-
-        DistributeActivitiesEqually(activities, schedule);
-
-        OptimizeSchedule(schedule);
-
-        return ConvertScheduleToApiFormat(schedule);
-    }
-
-    private Dictionary<string, List<string>> ConvertScheduleToApiFormat(Dictionary<string, HashSet<string>> schedule)
-    {
-        var convertedSchedule = new Dictionary<string, List<string>>();
-        foreach (var day in schedule.Keys)
+        try
         {
-            convertedSchedule[day] = schedule[day].ToList();
+            ValidateActivities(activities);
+
+            var activityList = activities.Select(a => new ActivityResult
+            {
+                Name = a.Name,
+                Duration = a.Duration,
+                Frequency = a.Frequency
+            }).ToList();
+
+            var schedule = BaseConstants.InitializeScheduleWithDefaults();
+
+            DistributeActivitiesEqually(activityList, schedule);
+
+            OptimizeSchedule(schedule);
+
+            var scheduleForApi = ConvertScheduleToApiFormat(schedule);
+
+            return scheduleForApi;
         }
-        return convertedSchedule;
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
-    private void ValidateActivities(List<ActivityModel> activities)
+    private void ValidateActivities(List<ActivityRequest> activities)
     {
         double totalRequiredHours = 0;
         foreach (var activity in activities)
@@ -42,53 +49,121 @@ public class SchedulesController : ControllerBase
 
         if (totalRequiredHours > BaseConstants.AvailableHours)
         {
-            throw new Exception("Общее количество требуемых часов активности превышает доступное время в неделю");
+            throw new Exception("Общее количество требуемых часов активности превышает доступное время в неделю.");
         }
     }
 
-    private void DistributeActivitiesEqually(List<ActivityModel> activities, Dictionary<string, HashSet<string>> schedule)
+    private void DistributeActivitiesEqually(List<ActivityResult> activities, Dictionary<string, HashSet<ActivityResult>> schedule)
     {
         var rnd = new Random();
         var days = schedule.Keys.ToList();
 
         foreach (var activity in activities)
         {
-            var shuffledDays = days.OrderBy(x => rnd.Next()).ToList();
+            var availableDays = new Queue<string>(days.OrderBy(x => rnd.Next())); // Случайное перемешивание дней
             for (int i = 0; i < activity.Frequency; i++)
             {
-                var day = shuffledDays.OrderBy(d => schedule[d].Count).First(); //тут размещаются занятия с учетом текущей загрузки дня
-                schedule[day].Add(activity.Name);
-                shuffledDays = shuffledDays.OrderBy(x => schedule[x].Count).ThenBy(x => rnd.Next()).ToList(); // меняем день для следующего распределения
+                if (availableDays.Count == 0)
+                {
+                    availableDays = new Queue<string>(days.OrderBy(x => rnd.Next())); // Перемешать снова, если закончились дни
+                }
+
+                var day = availableDays.Dequeue();
+                SetActivityTime(activity, schedule[day]);
+                schedule[day].Add(new ActivityResult
+                {
+                    Name = activity.Name,
+                    Duration = activity.Duration,
+                    Frequency = activity.Frequency,
+                    ScheduledTime = activity.ScheduledTime
+                });
             }
         }
     }
 
-    private void OptimizeSchedule(Dictionary<string, HashSet<string>> schedule)
+    private void SetActivityTime(ActivityResult activity, HashSet<ActivityResult> dayActivities)
     {
-        bool improvements;
-        do
+        var startTime = TimeSpan.FromHours(9); // Начало дня
+        var endTime = TimeSpan.FromHours(21); // Конец дня
+        bool placed = false;
+
+        while (!placed && startTime + TimeSpan.FromHours(activity.Duration) <= endTime)
         {
-            improvements = false;
-            var dayKeys = schedule.Keys.ToList();  // Получаем список всех дней один раз
-            for (int i = 0; i < dayKeys.Count; i++)
+            var endTimeActivity = startTime + TimeSpan.FromHours(activity.Duration);
+            if (!dayActivities.Any(a => a.ScheduledTime < endTimeActivity && a.ScheduledTime + TimeSpan.FromHours(a.Duration) > startTime))
             {
-                string currentDay = dayKeys[i];
-                string nextDay = dayKeys[(i + 1) % dayKeys.Count];
+                activity.ScheduledTime = startTime;
+                placed = true;
+            }
+            else
+            {
+                startTime += TimeSpan.FromMinutes(60); // Переход к следующему возможному времени начала
+            }
+        }
 
-                var commonActivities = schedule[currentDay].Intersect(schedule[nextDay]).ToList();
+        if (!placed)
+        {
+            throw new Exception("Не удалось найти время для активности в этот день.");
+        }
+    }
 
-                foreach (var activity in commonActivities)
+    private void OptimizeSchedule(Dictionary<string, HashSet<ActivityResult>> schedule)
+    {
+        var activityDays = new Dictionary<string, List<string>>();
+
+        // Сбор информации о днях, в которые запланированы активности
+        foreach (var day in schedule.Keys)
+        {
+            foreach (var activity in schedule[day])
+            {
+                if (!activityDays.ContainsKey(activity.Name))
                 {
-                    // Найти подходящий день для перестановки активности
-                    string targetDay = dayKeys.FirstOrDefault(day => day != currentDay && day != nextDay && !schedule[day].Contains(activity));
-                    if (targetDay != null)
+                    activityDays[activity.Name] = new List<string>();
+                }
+                activityDays[activity.Name].Add(day);
+            }
+        }
+
+        // Попытка уменьшить количество последовательных дней для каждой активности
+        foreach (var activity in activityDays.Keys)
+        {
+            var days = activityDays[activity];
+            for (int i = 0; i < days.Count - 1; i++)
+            {
+                if (days[i + 1] == days[i])
+                {
+                    // Найти новый день для перемещения активности
+                    string newDay = schedule.Keys.Except(days).FirstOrDefault();
+                    if (newDay != null)
                     {
-                        schedule[currentDay].Remove(activity);
-                        schedule[targetDay].Add(activity);
-                        improvements = true;
+                        var activityToMove = schedule[days[i]].FirstOrDefault(a => a.Name == activity);
+                        if (activityToMove != null)
+                        {
+                            schedule[days[i]].Remove(activityToMove);
+                            schedule[newDay].Add(activityToMove);
+                            days[i] = newDay; // Обновить информацию о дне
+                        }
                     }
                 }
             }
-        } while (improvements); // Продолжаем, пока есть улучшения
+        }
+    }
+
+    private Dictionary<string, List<string>> ConvertScheduleToApiFormat(Dictionary<string, HashSet<ActivityResult>> schedule)
+    {
+        var convertedSchedule = new Dictionary<string, List<string>>();
+
+        foreach (var day in schedule.Keys)
+        {
+            // Собираем все активности в этот день, сортируем по времени начала и форматируем строку вывода
+            var dayEvents = schedule[day]
+                .OrderBy(a => a.ScheduledTime)  // Сортировка по времени начала
+                .Select(a => $"{a.Name} at {a.ScheduledTime:hh\\:mm}")  // Форматирование вывода
+                .ToList();
+
+            convertedSchedule[day] = dayEvents;
+        }
+
+        return convertedSchedule;
     }
 }
