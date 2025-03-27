@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CatNoteSchedule.API", "CatN
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CatNoteSchedule.Domain", "CatNoteSchedule.Domain\CatNoteSchedule.Domain.csproj", "{71690D65-AFEC-4E60-A2AF-AABB9DA3E052}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CatNoteSchedule.DAL", "CatNoteSchedule.DAL\CatNoteSchedule.DAL.csproj", "{A6AD5BA3-37D3-4148-B0A4-5A58FDF73EC7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CatNoteSchedule.BLL", "CatNoteSchedule.BLL\CatNoteSchedule.BLL.csproj", "{3E3F6B6E-77B8-4766-8ECF-B8C75BF188E2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +25,14 @@ Global
 		{71690D65-AFEC-4E60-A2AF-AABB9DA3E052}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{71690D65-AFEC-4E60-A2AF-AABB9DA3E052}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{71690D65-AFEC-4E60-A2AF-AABB9DA3E052}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A6AD5BA3-37D3-4148-B0A4-5A58FDF73EC7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A6AD5BA3-37D3-4148-B0A4-5A58FDF73EC7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A6AD5BA3-37D3-4148-B0A4-5A58FDF73EC7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A6AD5BA3-37D3-4148-B0A4-5A58FDF73EC7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3E3F6B6E-77B8-4766-8ECF-B8C75BF188E2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3E3F6B6E-77B8-4766-8ECF-B8C75BF188E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3E3F6B6E-77B8-4766-8ECF-B8C75BF188E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3E3F6B6E-77B8-4766-8ECF-B8C75BF188E2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

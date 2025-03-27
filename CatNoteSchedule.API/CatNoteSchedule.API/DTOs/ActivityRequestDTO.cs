@@ -1,6 +1,6 @@
-﻿namespace CatNoteSchedule.API.Models;
+﻿namespace CatNoteSchedule.API.DTOs;
 
-public class ActivityRequest
+public class ActivityRequestDTO
 {
     public string Name { get; set; } = null!;
     public double Duration { get; set; }
