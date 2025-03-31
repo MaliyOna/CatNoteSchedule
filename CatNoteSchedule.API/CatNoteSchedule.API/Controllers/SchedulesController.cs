@@ -17,7 +17,7 @@ public class SchedulesController : ControllerBase
     }
 
     [HttpPost("user/{userId}")]
-    public async Task<Dictionary<string, List<string>>> GenerateSchedule(List<ActivityRequestDTO> activities, [FromQuery] Guid userId, CancellationToken cancellationToken)
+    public async Task<Dictionary<string, List<string>>> GenerateSchedule(List<ActivityRequestDTO> activities, Guid userId, CancellationToken cancellationToken)
     {
         var activitiesModel = activities.Select(x => new ActivityRequestModel
         {
@@ -30,7 +30,7 @@ public class SchedulesController : ControllerBase
     }
 
     [HttpGet("user/{userId}")]
-    public async Task<UserSchedulesDTO> GetByUserId([FromQuery] Guid userId, CancellationToken cancellationToken)
+    public async Task<UserSchedulesDTO?> GetByUserId(Guid userId, CancellationToken cancellationToken)
     {
         var userSchedule = await schedulesService.GetByUserId(userId, cancellationToken);
 
@@ -43,7 +43,7 @@ public class SchedulesController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<Dictionary<string, List<string>>> GetById([FromQuery] Guid id, CancellationToken cancellationToken)
+    public async Task<Dictionary<string, List<string>?>> GetById([FromQuery] Guid id, CancellationToken cancellationToken)
     {
         var schedule = await schedulesService.GetById(id, cancellationToken);
 

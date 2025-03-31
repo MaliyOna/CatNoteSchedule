@@ -57,15 +57,18 @@ public class SchedulesService : ISchedulesService
         return scheduleForApi;
     }
 
-    public async Task<UserSchedulesModel> GetByUserId(Guid userId, CancellationToken cancellationToken)
+    public async Task<UserSchedulesModel?> GetByUserId(Guid userId, CancellationToken cancellationToken)
     {
         var userSchedule = await userSchedulesRepository.GetByUserId(userId, cancellationToken);
-        return new()
-        {
-            Id = userSchedule.Id,
-            UserId = userSchedule.UserId,
-            Shedule = userSchedule.Shedule
-        };
+
+        return userSchedule == null
+            ? null
+            : new()
+            {
+                Id = userSchedule.Id,
+                UserId = userSchedule.UserId,
+                Shedule = userSchedule.Shedule
+            };
     }
 
     public async Task<List<UserSchedulesModel>> GetAll(CancellationToken cancellationToken)
@@ -80,11 +83,12 @@ public class SchedulesService : ISchedulesService
         }).ToList();
     }
 
-    public async Task<Dictionary<string, List<string>>> GetById(Guid id, CancellationToken cancellationToken)
+    public async Task<Dictionary<string, List<string>?>> GetById(Guid id, CancellationToken cancellationToken)
     {
         var userShedule = await userSchedulesRepository.GetById(id, cancellationToken);
 
         var scheduleDictionary = JsonConvert.DeserializeObject<Dictionary<string, List<string>>>(userShedule.Shedule);
+
         return scheduleDictionary;
     }
 
@@ -207,7 +211,7 @@ public class SchedulesService : ISchedulesService
             // Собираем все активности в этот день, сортируем по времени начала и форматируем строку вывода
             var dayEvents = schedule[day]
                 .OrderBy(a => a.ScheduledTime)  // Сортировка по времени начала
-                .Select(a => $"{a.Name} at {a.ScheduledTime:hh\\:mm}")  // Форматирование вывода
+                .Select(a => $"{a.Name} в {a.ScheduledTime:hh\\:mm}")  // Форматирование вывода
                 .ToList();
 
             convertedSchedule[day] = dayEvents;
