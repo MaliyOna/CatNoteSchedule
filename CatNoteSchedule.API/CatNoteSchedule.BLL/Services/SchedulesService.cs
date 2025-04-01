@@ -10,17 +10,14 @@ namespace CatNoteSchedule.BLL.Services;
 public class SchedulesService : ISchedulesService
 {
     private readonly IUserSchedulesRepository userSchedulesRepository;
-    //private readonly ILogger<SchedulesService> logger;
 
-    public SchedulesService(IUserSchedulesRepository userSchedulesRepository) //AddLogs --project CatNoteSchedule.DAL --startup-project CatNoteSchedule.API
+    public SchedulesService(IUserSchedulesRepository userSchedulesRepository)
     {
         this.userSchedulesRepository = userSchedulesRepository;
-        //this.logger = logger;
     }
 
     public async Task<Dictionary<string, List<string>>> GenerateSchedule(List<ActivityRequestModel> activities, Guid userId, CancellationToken cancellationToken)
     {
-        //logger.LogInformation("Start GenerateSchedule");
         ValidateActivities(activities);
 
         var activityList = activities.Select(a => new ActivityResultModel
@@ -44,16 +41,8 @@ public class SchedulesService : ISchedulesService
             Shedule = JsonConvert.SerializeObject(scheduleForApi)
         };
 
-        try
-        {
-            await userSchedulesRepository.Add(userShedule, cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            //logger.LogError(ex.Message);
-        }
+        await userSchedulesRepository.Add(userShedule, cancellationToken);
 
-        //logger.LogInformation("Finish GenerateSchedule");
         return scheduleForApi;
     }
 
@@ -113,12 +102,12 @@ public class SchedulesService : ISchedulesService
 
         foreach (var activity in activities)
         {
-            var availableDays = new Queue<string>(days.OrderBy(x => rnd.Next())); // Случайное перемешивание дней
+            var availableDays = new Queue<string>(days.OrderBy(x => rnd.Next()));
             for (int i = 0; i < activity.Frequency; i++)
             {
                 if (availableDays.Count == 0)
                 {
-                    availableDays = new Queue<string>(days.OrderBy(x => rnd.Next())); // Перемешать снова, если закончились дни
+                    availableDays = new Queue<string>(days.OrderBy(x => rnd.Next()));
                 }
 
                 var day = availableDays.Dequeue();
@@ -136,8 +125,8 @@ public class SchedulesService : ISchedulesService
 
     private void SetActivityTime(ActivityResultModel activity, HashSet<ActivityResultModel> dayActivities)
     {
-        var startTime = TimeSpan.FromHours(9); // Начало дня
-        var endTime = TimeSpan.FromHours(21); // Конец дня
+        var startTime = TimeSpan.FromHours(9);
+        var endTime = TimeSpan.FromHours(21);
         bool placed = false;
 
         while (!placed && startTime + TimeSpan.FromHours(activity.Duration) <= endTime)
@@ -150,7 +139,7 @@ public class SchedulesService : ISchedulesService
             }
             else
             {
-                startTime += TimeSpan.FromMinutes(60); // Переход к следующему возможному времени начала
+                startTime += TimeSpan.FromMinutes(60);
             }
         }
 
@@ -164,7 +153,6 @@ public class SchedulesService : ISchedulesService
     {
         var activityDays = new Dictionary<string, List<string>>();
 
-        // Сбор информации о днях, в которые запланированы активности
         foreach (var day in schedule.Keys)
         {
             foreach (var activity in schedule[day])
@@ -177,7 +165,6 @@ public class SchedulesService : ISchedulesService
             }
         }
 
-        // Попытка уменьшить количество последовательных дней для каждой активности
         foreach (var activity in activityDays.Keys)
         {
             var days = activityDays[activity];
@@ -185,7 +172,6 @@ public class SchedulesService : ISchedulesService
             {
                 if (days[i + 1] == days[i])
                 {
-                    // Найти новый день для перемещения активности
                     string newDay = schedule.Keys.Except(days).FirstOrDefault();
                     if (newDay != null)
                     {
@@ -194,7 +180,7 @@ public class SchedulesService : ISchedulesService
                         {
                             schedule[days[i]].Remove(activityToMove);
                             schedule[newDay].Add(activityToMove);
-                            days[i] = newDay; // Обновить информацию о дне
+                            days[i] = newDay;
                         }
                     }
                 }
@@ -208,10 +194,9 @@ public class SchedulesService : ISchedulesService
 
         foreach (var day in schedule.Keys)
         {
-            // Собираем все активности в этот день, сортируем по времени начала и форматируем строку вывода
             var dayEvents = schedule[day]
-                .OrderBy(a => a.ScheduledTime)  // Сортировка по времени начала
-                .Select(a => $"{a.Name} в {a.ScheduledTime:hh\\:mm}")  // Форматирование вывода
+                .OrderBy(a => a.ScheduledTime)
+                .Select(a => $"{a.Name} в {a.ScheduledTime:hh\\:mm}")
                 .ToList();
 
             convertedSchedule[day] = dayEvents;
